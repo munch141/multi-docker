@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t munch141/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true munch141/react-test npm test
+
+after_success:
+  - docker build -t munch141/multi-client ./client
+  - docker build -t munch141/multi-nginx ./nginx
+  - docker build -t munch141/multi-server ./server
+  - docker build -t munch141/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push munch141/multi-client
+  - docker push munch141/multi-nginx
+  - docker push munch141/multi-server
+  - docker push munch141/multi-worker
